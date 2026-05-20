@@ -41,7 +41,7 @@ func TestCreateQRIS_Success(t *testing.T) {
 		assert.Equal(t, int64(5000), req.AmountIDR)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"qr_code_url": testQRCodeURL})
+		_ = json.NewEncoder(w).Encode(map[string]string{"qr_code_url": testQRCodeURL})
 	}))
 	defer srv.Close()
 
@@ -60,7 +60,7 @@ func TestCreateQRIS_ParkingFee(t *testing.T) {
 		assert.Equal(t, int64(25000), req.AmountIDR)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"qr_code_url": testQRCodeURL})
+		_ = json.NewEncoder(w).Encode(map[string]string{"qr_code_url": testQRCodeURL})
 	}))
 	defer srv.Close()
 
@@ -107,7 +107,7 @@ func TestCreateQRIS_GatewayReturns404(t *testing.T) {
 func TestCreateQRIS_GatewayReturnsInvalidJSON(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte("not-json"))
+		_, _ = w.Write([]byte("not-json"))
 	}))
 	defer srv.Close()
 
@@ -133,9 +133,9 @@ func TestCreateQRIS_SendsCorrectPayload(t *testing.T) {
 	var received CreateQRISRequest
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewDecoder(r.Body).Decode(&received)
+		_ = json.NewDecoder(r.Body).Decode(&received)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"qr_code_url": testQRCodeURL})
+		_ = json.NewEncoder(w).Encode(map[string]string{"qr_code_url": testQRCodeURL})
 	}))
 	defer srv.Close()
 
