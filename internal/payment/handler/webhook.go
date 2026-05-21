@@ -35,7 +35,7 @@ func (h *Handler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 		httpresponse.FailedBadRequest(w, "bad_request", "failed to read request body")
 		return
 	}
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 
 	// Validate HMAC-SHA256 signature
 	sig := r.Header.Get("X-Webhook-Signature")

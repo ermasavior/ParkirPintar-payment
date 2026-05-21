@@ -53,7 +53,7 @@ func (c *Client) CreateQRIS(req CreateQRISRequest) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("gatewayclient: POST /qris/create: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("gatewayclient: unexpected status %d", resp.StatusCode)
