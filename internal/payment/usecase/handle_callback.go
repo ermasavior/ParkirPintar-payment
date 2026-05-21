@@ -66,19 +66,20 @@ func (u *PaymentUsecase) HandleCallback(ctx context.Context, req model.WebhookCa
 		subject = "payment.parking.done"
 	}
 
-	if err := u.natsConn.Publish(subject, payload); err != nil {
-		logger.Error(ctx, "HandleCallback: failed to publish NATS event",
+	if u.natsConn != nil {
+		if err := u.natsConn.Publish(subject, payload); err != nil {
+			logger.Error(ctx, "HandleCallback: failed to publish NATS event",
+				slog.String("subject", subject),
+				slog.String("error", err.Error()),
+			)
+			return apperror.New("nats_error", "failed to publish payment event")
+		}
+		logger.Info(ctx, "HandleCallback: event published",
 			slog.String("subject", subject),
-			slog.String("error", err.Error()),
+			slog.String("reference_id", req.ReferenceID),
+			slog.String("status", req.Status),
 		)
-		return apperror.New("nats_error", "failed to publish payment event")
 	}
-
-	logger.Info(ctx, "HandleCallback: event published",
-		slog.String("subject", subject),
-		slog.String("reference_id", req.ReferenceID),
-		slog.String("status", req.Status),
-	)
 
 	return nil
 }

@@ -153,23 +153,14 @@ func TestHandleCallback_Success_BookingFee(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// Use a real NATS connection in test mode (no server needed — we just test the logic)
-	// We'll use a mock for the repo and skip NATS publish by using a nil conn
-	// For a real test, use nats.NewInMemory() or a test server
 	repo := mockpayment.NewMockPaymentRepository(ctrl)
 	repo.EXPECT().GetByReferenceAndType(gomock.Any(), testRefID, model.PaymentTypeBookingFee).
 		Return(&model.Payment{ID: testPaymentID, ReferenceID: testRefID}, nil)
 	repo.EXPECT().UpdateStatus(gomock.Any(), testPaymentID, model.PaymentStatusSuccess, "GW-REF-123").
 		Return(nil)
 
-	// Connect to embedded NATS for publish test
-	ns, err := nats.Connect(nats.DefaultURL)
-	if err != nil {
-		t.Skip("NATS not available, skipping publish test")
-	}
-	defer ns.Close()
-
-	appErr := newUsecase(repo, ns).HandleCallback(context.Background(), model.WebhookCallbackRequest{
+	// Use nil NATS — publish is non-fatal, test validates repo interactions only
+	appErr := newUsecase(repo, nil).HandleCallback(context.Background(), model.WebhookCallbackRequest{
 		GatewayRef:  "GW-REF-123",
 		ReferenceID: testRefID,
 		PaymentType: "BOOKING_FEE",
